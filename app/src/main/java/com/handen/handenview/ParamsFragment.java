@@ -10,8 +10,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.handen.handenview.dummy.DummyContent;
 import com.handen.handenview.dummy.DummyContent.DummyItem;
+
+import java.util.ArrayList;
 
 /**
  * A fragment representing a list of Items.
@@ -66,7 +67,10 @@ public class ParamsFragment extends Fragment {
             else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            recyclerView.setAdapter(new ParamAdapter(DummyContent.ITEMS, mListener));
+
+            ArrayList<String> names = ParamsLab.get(getContext()).getNames();
+
+            recyclerView.setAdapter(new ParamAdapter(names, mListener));
         }
         return view;
     }
