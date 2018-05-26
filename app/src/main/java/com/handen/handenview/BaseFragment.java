@@ -5,13 +5,13 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import static com.handen.handenview.database.DbSchema.BaseTable.Cols.DESCRIPTION;
@@ -35,17 +35,17 @@ public class BaseFragment extends Fragment {
 
     private EditText id, name, currentValue, description, min, max, units;
 
+    private TextView currentParam;
+
     private int currentRowId;
 
     private OnFragmentInteractionListener mListener;
 
     public BaseFragment() {
-        // Required empty public constructor
     }
 
     public static BaseFragment newInstance() {
         BaseFragment fragment = new BaseFragment();
-
         return fragment;
     }
 
@@ -59,6 +59,23 @@ public class BaseFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_base, container, false);
+
+        Button button = view.findViewById(R.id.previous);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                stepPrevious();
+            }
+        });
+
+        view.findViewById(R.id.next).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                stepNext();
+            }
+        });
+
+        currentParam = view.findViewById(R.id.currentParam);
         fab = view.findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -69,14 +86,24 @@ public class BaseFragment extends Fragment {
         });
 
         id = view.findViewById(R.id.id);
-        id.setText(ParamsLab.get(getContext()).getValue(currentRowId, ID));
         id.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 // If the event is a key-down event on the "enter" button
                 if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
                         (keyCode == KeyEvent.KEYCODE_ENTER)) {
                     // Perform action on key press
-                    ParamsLab.get(getContext()).update(ID, id.getText().toString(), currentRowId);
+                    if(id.getText().toString().equals("")) {
+                        int id = currentRowId;
+                        if(currentRowId != ParamsLab.get(getContext()).getFirstId()) {
+                            stepPrevious();
+                        }
+                        else {
+                            stepNext();
+                        }
+                        ParamsLab.get(getContext()).delete (id);
+                    }
+                    else
+                        ParamsLab.get(getContext()).update(ID, id.getText().toString(), currentRowId);
                     return true;
                 }
                 return false;
@@ -84,7 +111,6 @@ public class BaseFragment extends Fragment {
         });
 
         name = view.findViewById(R.id.name);
-        name.setText(ParamsLab.get(getContext()).getValue(currentRowId, NAME));
         name.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 // If the event is a key-down event on the "enter" button
@@ -98,9 +124,7 @@ public class BaseFragment extends Fragment {
             }
         });
         currentValue = view.findViewById(R.id.currentValue);
-
         description = view.findViewById(R.id.description);
-        description.setText(ParamsLab.get(getContext()).getValue(currentRowId, DESCRIPTION));
         description.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 // If the event is a key-down event on the "enter" button
@@ -114,7 +138,6 @@ public class BaseFragment extends Fragment {
             }
         });
         min = view.findViewById(R.id.min);
-        min.setText(ParamsLab.get(getContext()).getValue(currentRowId, MIN));
         min.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 // If the event is a key-down event on the "enter" button
@@ -128,7 +151,6 @@ public class BaseFragment extends Fragment {
             }
         });
         max = view.findViewById(R.id.max);
-        max.setText(ParamsLab.get(getContext()).getValue(currentRowId, MAX));
         max.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 // If the event is a key-down event on the "enter" button
@@ -142,23 +164,6 @@ public class BaseFragment extends Fragment {
             }
         });
         units = view.findViewById(R.id.units);
-        units.setText(ParamsLab.get(getContext()).getValue(currentRowId, UNITS));
-        units.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                ParamsLab.get(getContext()).update(UNITS, s.toString(), currentRowId);
-            }
-        });
         units.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 // If the event is a key-down event on the "enter" button
@@ -171,7 +176,30 @@ public class BaseFragment extends Fragment {
                 return false;
             }
         });
+
+        readAndSetValues();
+
         return view;
+    }
+
+    private void stepPrevious() {
+        currentRowId = ParamsLab.get(getContext()).getPrevisiousId(currentRowId);
+        readAndSetValues();
+    }
+
+    private void stepNext() {
+        currentRowId = ParamsLab.get(getContext()).getNextId(currentRowId);
+        readAndSetValues();
+    }
+
+    private void readAndSetValues() {
+        currentParam.setText("[" + currentRowId + "/" + Integer.toString(ParamsLab.get(getContext()).getRowsCount()) + "]");
+        id.setText(ParamsLab.get(getContext()).getValue(currentRowId, ID));
+        name.setText(ParamsLab.get(getContext()).getValue(currentRowId, NAME));
+        description.setText(ParamsLab.get(getContext()).getValue(currentRowId, DESCRIPTION));
+        min.setText(ParamsLab.get(getContext()).getValue(currentRowId, MIN));
+        max.setText(ParamsLab.get(getContext()).getValue(currentRowId, MAX));
+        units.setText(ParamsLab.get(getContext()).getValue(currentRowId, UNITS));
     }
 
     @Override
