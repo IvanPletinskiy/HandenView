@@ -17,6 +17,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private String BASE = "BASE";
     private String TRENDS = "TRENDS";
     private String SETTINGS = "SETTINGS";
+    private ParamsFragment paramsFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,11 +44,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         navigationView.setNavigationItemSelectedListener(this);
         navigationView.setCheckedItem(0);
 
-        getSupportFragmentManager()
-                .beginTransaction()
-                .addToBackStack(PARAMS)
-                .replace(R.id.fragmentHost, ParamsFragment.newInstance(), PARAMS)
-                .commit();
+        getSupportFragmentManager().beginTransaction().addToBackStack(PARAMS).replace(R.id.fragmentHost, ParamsFragment.newInstance(), PARAMS).commit();
+
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                MODBUSTCP modbustcp = new MODBUSTCP();
+                modbustcp.exchange();
+            }
+        });
+        thread.start();
+
     }
 
     @Override
@@ -89,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Handle navigation view item clicks here.
         int id = item.getItemId();
         if (id == R.id.main) {
-            ParamsFragment paramsFragment = ParamsFragment.newInstance();
+            paramsFragment = ParamsFragment.newInstance();
             changeFragment(paramsFragment, PARAMS);
         }
         else {
@@ -121,11 +128,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         String currentTag = currentFragment.getTag();
 
         if (!newFragmentTag.equals(currentFragment.getTag())) {
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .addToBackStack(newFragmentTag)
-                    .replace(R.id.fragmentHost, newFragment, newFragmentTag)
-                    .commit();
+            getSupportFragmentManager().beginTransaction().addToBackStack(newFragmentTag).replace(R.id.fragmentHost, newFragment, newFragmentTag).commit();
         }
+    }
+
+    public static void redrawValues() {
+
     }
 }

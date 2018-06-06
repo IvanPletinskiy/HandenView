@@ -19,10 +19,12 @@ import java.util.ArrayList;
 public class ParamAdapter extends RecyclerView.Adapter<ParamAdapter.ViewHolder> {
 
     private final ArrayList<String> mValues;
+    private final ArrayList<Integer> ids;
     private final OnListFragmentInteractionListener mListener;
 
-    public ParamAdapter(ArrayList<String> items, OnListFragmentInteractionListener listener) {
+    public ParamAdapter(ArrayList<String> items, ArrayList<Integer> ids, OnListFragmentInteractionListener listener) {
         mValues = items;
+        this.ids = ids;
         mListener = listener;
     }
 
@@ -35,6 +37,8 @@ public class ParamAdapter extends RecyclerView.Adapter<ParamAdapter.ViewHolder> 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.name.setText(mValues.get(position));
+        Float fl = MODBUSTCP.getCurrentValue(ids.get(position));
+        holder.value.setText(Float.toString(fl));
 
         holder.name.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -55,11 +59,12 @@ public class ParamAdapter extends RecyclerView.Adapter<ParamAdapter.ViewHolder> 
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        public final TextView name;
+        public final TextView name, value;
 
         public ViewHolder(View view) {
             super(view);
             name = view.findViewById(R.id.name);
+            value = view.findViewById(R.id.valueTextView);
         }
     }
 }

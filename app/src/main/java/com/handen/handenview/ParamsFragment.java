@@ -27,6 +27,7 @@ public class ParamsFragment extends Fragment {
     // TODO: Customize parameters
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
+    private static ParamAdapter adapter;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -68,8 +69,9 @@ public class ParamsFragment extends Fragment {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
             ArrayList<String> names = ParamsLab.get(getContext()).getNames();
-
-            recyclerView.setAdapter(new ParamAdapter(names, mListener));
+            ArrayList<Integer> ids = ParamsLab.get(getContext()).getIds();
+            adapter = new ParamAdapter(names, ids, mListener);
+            recyclerView.setAdapter(adapter);
         }
         return view;
     }
@@ -89,6 +91,10 @@ public class ParamsFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    public static void redraw() {
+        adapter.notifyDataSetChanged();
     }
 
     /**

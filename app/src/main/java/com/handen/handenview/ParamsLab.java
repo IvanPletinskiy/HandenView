@@ -197,4 +197,26 @@ public class ParamsLab {
         cursor.moveToFirst();
         return cursor.getCount() > 0 ? cursor.getInt(0) : currentRowId;
     }
+
+    public ArrayList<Integer> getIds() {
+        ArrayList<Integer> ret = new ArrayList<>();
+        String[] columns = new String[1];
+        columns[0] = Cols.ID;
+        Cursor cursor = mDatabase.query(false,
+                NAME,
+                columns,
+                null,
+                null,
+                null,
+                null,
+                "ID desc",
+                null,
+                null);
+        cursor.moveToFirst();
+        for(int i = 0; i < cursor.getCount(); i ++) {
+            ret.add(cursor.getInt(0));
+            cursor.moveToNext();
+        }
+        return ret;
+    }
 }
